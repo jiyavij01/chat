@@ -18,103 +18,94 @@ import com.ai.chat.models.ChatMessage;
 @Service
 public class SarvamAiService {
 
-    @Value("${gemini.api.key}")
-    private String apiKey;
+	@Value("${gemini.api.key}")
+	private String apiKey;
 
-    @Value("${gemini.model}")
-    private String model;
+	@Value("${gemini.model}")
+	private String model;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+	private final RestTemplate restTemplate = new RestTemplate();
 
-    public String askGemini(List<ChatMessage> history, String userMessage) {
+	public String askSarvam(List<ChatMessage> history, String userMessage) {
 
-        String url =
-                "https://generativelanguage.googleapis.com/v1beta/models/"
-                        + model
-                        + ":generateContent?key="
-                        + apiKey;
+	    String url =
+	            "https://generativelanguage.googleapis.com/v1beta/models/"
+	                    + model
+	                    + ":generateContent?key="
+	                    + apiKey;
 
-        List<Map<String, Object>> contents = new ArrayList<>();
+	    List<Map<String, Object>> contents = new ArrayList<>();
 
-        // old messages
-        for (ChatMessage msg : history) {
+	    // old chat history
+	    for (ChatMessage msg : history) {
 
-            Map<String, Object> message = new HashMap<>();
+	        Map<String, Object> message = new HashMap<>();
 
-            message.put(
-                    "role",
-                    msg.getRole().equals("assistant")
-                            ? "model"
-                            : "user"
-            );
+	        message.put(
+	                "role",
+	                msg.getRole().equals("assistant")
+	                        ? "model"
+	                        : "user"
+	        );
 
-            message.put(
-                    "parts",
-                    List.of(
-                            Map.of(
-                                    "text",
-                                    msg.getContent()
-                            )
-                    )
-            );
+	        message.put(
+	                "parts",
+	                List.of(
+	                        Map.of(
+	                                "text",
+	                                msg.getContent()
+	                        )
+	                )
+	        );
 
-            contents.add(message);
-        }
+	        contents.add(message);
+	    }
 
-        // current message
-        contents.add(
-                Map.of(
-                        "role", "user",
-                        "parts",
-                        List.of(
-                                Map.of(
-                                        "text",
-                                        userMessage
-                                )
-                        )
-                )
-        );
+	    // current user message
+	    contents.add(
+	            Map.of(
+	                    "role", "user",
+	                    "parts",
+	                    List.of(
+	                            Map.of(
+	                                    "text",
+	                                    userMessage
+	                            )
+	                    )
+	            )
+	    );
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("contents", contents);
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("contents", contents);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+	    HttpHeaders header = new HttpHeaders();
+	    header.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Map<String, Object>> entity =
-                new HttpEntity<>(body, headers);
+	    HttpEntity<Map<String, Object>> entity =
+	            new HttpEntity<>(body, header);
 
-        try {
+	    ResponseEntity<Map> response =
+	            restTemplate.postForEntity(
+	                    url,
+	                    entity,
+	                    Map.class
+	            );
 
-            ResponseEntity<Map> response =
-                    restTemplate.postForEntity(
-                            url,
-                            entity,
-                            Map.class
-                    );
+	    List candidates =
+	            (List) response.getBody().get("candidates");
 
-            List candidates =
-                    (List) response.getBody().get("candidates");
+	    Map firstCandidate =
+	            (Map) candidates.get(0);
 
-            Map firstCandidate =
-                    (Map) candidates.get(0);
+	    Map content =
+	            (Map) firstCandidate.get("content");
 
-            Map content =
-                    (Map) firstCandidate.get("content");
+	    List parts =
+	            (List) content.get("parts");
 
-            List parts =
-                    (List) content.get("parts");
+	    Map firstPart =
+	            (Map) parts.get(0);
 
-            Map firstPart =
-                    (Map) parts.get(0);
-
-            return firstPart.get("text").toString();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            return "Error while calling Gemini API";
-        }
-    }
+	    return firstPart.get("text").toString();
+	}
 }
