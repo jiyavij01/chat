@@ -13,7 +13,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://aichat-9lc2.vercel.app")
+                        .allowedOrigins("https://aichat-9lc2-fw8m5790o-jiya-s-projects5.vercel.app/")
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true);

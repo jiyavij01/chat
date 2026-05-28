@@ -58,7 +58,7 @@ public class SecurityConfig {
 
 	    configuration.setAllowedOrigins(List.of(
 	            "http://localhost:3000",
-	            "https://aichat-9lc2.vercel.app"
+	            "https://aichat-9lc2-fw8m5790o-jiya-s-projects5.vercel.app/"
 	    ));
 
 	    configuration.setAllowedMethods(List.of(
