@@ -36,56 +36,51 @@ public class SarvamAiService {
 
         List<Map<String, Object>> contents = new ArrayList<>();
 
-        // Previous chat history
+        // old messages
         for (ChatMessage msg : history) {
 
-            String role =
-                    msg.getRole().equalsIgnoreCase("assistant")
+            Map<String, Object> message = new HashMap<>();
+
+            message.put(
+                    "role",
+                    msg.getRole().equals("assistant")
                             ? "model"
-                            : "user";
+                            : "user"
+            );
 
-            Map<String, Object> part = new HashMap<>();
-            part.put("text", msg.getContent());
+            message.put(
+                    "parts",
+                    List.of(
+                            Map.of(
+                                    "text",
+                                    msg.getContent()
+                            )
+                    )
+            );
 
-            List<Map<String, Object>> parts = new ArrayList<>();
-            parts.add(part);
-
-            Map<String, Object> content = new HashMap<>();
-            content.put("role", role);
-            content.put("parts", parts);
-
-            contents.add(content);
+            contents.add(message);
         }
 
-        // Current user message
-        Map<String, Object> currentPart = new HashMap<>();
-        currentPart.put("text", userMessage);
+        // current message
+        contents.add(
+                Map.of(
+                        "role", "user",
+                        "parts",
+                        List.of(
+                                Map.of(
+                                        "text",
+                                        userMessage
+                                )
+                        )
+                )
+        );
 
-        List<Map<String, Object>> currentParts = new ArrayList<>();
-        currentParts.add(currentPart);
-
-        Map<String, Object> currentContent = new HashMap<>();
-        currentContent.put("role", "user");
-        currentContent.put("parts", currentParts);
-
-        contents.add(currentContent);
-
-        // Request body
         Map<String, Object> body = new HashMap<>();
         body.put("contents", contents);
 
-        // Optional generation config
-        Map<String, Object> generationConfig = new HashMap<>();
-        generationConfig.put("temperature", 0.2);
-        generationConfig.put("maxOutputTokens", 1000);
-
-        body.put("generationConfig", generationConfig);
-
-        // Headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Request entity
         HttpEntity<Map<String, Object>> entity =
                 new HttpEntity<>(body, headers);
 
@@ -98,18 +93,11 @@ public class SarvamAiService {
                             Map.class
                     );
 
-            // Debugging
-            System.out.println(response.getBody());
-
-            // Parse Gemini response
             List candidates =
                     (List) response.getBody().get("candidates");
 
-            if (candidates == null || candidates.isEmpty()) {
-                return "No response from Gemini.";
-            }
-
-            Map firstCandidate = (Map) candidates.get(0);
+            Map firstCandidate =
+                    (Map) candidates.get(0);
 
             Map content =
                     (Map) firstCandidate.get("content");
@@ -117,7 +105,8 @@ public class SarvamAiService {
             List parts =
                     (List) content.get("parts");
 
-            Map firstPart = (Map) parts.get(0);
+            Map firstPart =
+                    (Map) parts.get(0);
 
             return firstPart.get("text").toString();
 
@@ -125,7 +114,7 @@ public class SarvamAiService {
 
             e.printStackTrace();
 
-            return "Error: " + e.getMessage();
+            return "Error while calling Gemini API";
         }
     }
 }
