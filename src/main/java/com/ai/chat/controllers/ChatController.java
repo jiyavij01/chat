@@ -39,7 +39,7 @@ public class ChatController {
 		userMsg.setUser(user);
 		chatrepo.save(userMsg);
 		
-		String ai_reply = sarvamAiService.askSarvam(history, request.getMessage());
+		String ai_reply = sarvamAiService.askGemini(history, request.getMessage());
 		ChatMessage aiMsg = new ChatMessage();
 		aiMsg.setRole("assistant");
 		aiMsg.setContent(ai_reply);
