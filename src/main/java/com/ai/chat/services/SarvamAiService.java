@@ -26,7 +26,7 @@ public class SarvamAiService {
 
 	private final RestTemplate restTemplate = new RestTemplate();
 
-	public String askSarvam(List<ChatMessage> history, String userMessage) {
+	public String askGemini(List<ChatMessage> history, String userMessage) {
 
 	    String url =
 	            "https://generativelanguage.googleapis.com/v1beta/models/"
